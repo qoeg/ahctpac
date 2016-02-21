@@ -31,6 +31,8 @@ namespace OddEven
 
         static void Main(string[] args)
         {
+            bool readyToAnswer = false;
+
             if (File.Exists(LogPath))
             {
                 File.Delete(LogPath);
@@ -41,9 +43,19 @@ namespace OddEven
             while (true)
             {
                 string str = Console.ReadLine();
-                buffer.AppendLine(str);
+                File.AppendAllText(LogPath, str + Environment.NewLine);
 
-                waitObj.Set();
+                if (readyToAnswer)
+                {
+                    buffer.AppendLine(str);
+                    waitObj.Set();
+                    continue;
+                }
+
+                if (str.ToLower().Contains("ahctpac"))
+                {
+                    readyToAnswer = true;
+                }
             }
         }
 
@@ -56,8 +68,6 @@ namespace OddEven
                     Thread.Sleep(1000);
 
                     string question = buffer.ToString();
-
-                    File.AppendAllText(LogPath, question + Environment.NewLine);
                     File.AppendAllText(LogPath, "-----------------------" + Environment.NewLine);
 
                     string answer = string.Empty;
