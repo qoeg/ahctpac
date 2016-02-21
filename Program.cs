@@ -43,10 +43,11 @@ namespace OddEven
             while (true)
             {
                 string str = Console.ReadLine();
-                File.AppendAllText(LogPath, str + Environment.NewLine);
+                Log(str);
 
-                if (readyToAnswer)
+                if (readyToAnswer && !string.IsNullOrWhiteSpace(str))
                 {
+                    Log(string.Format("Appending line to buffer: {0}", str), true);
                     buffer.AppendLine(str);
                     waitObj.Set();
                     continue;
@@ -54,6 +55,7 @@ namespace OddEven
 
                 if (str.ToLower().Contains("ahctpac"))
                 {
+                    Log("READY TO ANSWER", true);
                     readyToAnswer = true;
                 }
             }
@@ -63,16 +65,19 @@ namespace OddEven
         {
             while (true)
             {
+                Log("Waiting for question", true);
                 if (waitObj.WaitOne())
                 {
                     Thread.Sleep(1000);
+                    Log("-----------------------");
 
                     string question = buffer.ToString();
-                    File.AppendAllText(LogPath, "-----------------------" + Environment.NewLine);
+                    buffer.Clear();
 
                     string answer = string.Empty;
                     string[] lines = question.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
+                    Log(string.Format("Processing lines: {0}", lines.Length), true);
                     if (lines.Length > 0)
                     {
                         if (lines[0].Contains("Collatz"))
@@ -99,15 +104,16 @@ namespace OddEven
                         {
                             answer = "IDK";
                         }
+
+                        Log(string.Format("A: {0}", answer));
+                        Log("-----------------------");
+
+                        if (!string.IsNullOrWhiteSpace(answer))
+                        {
+                            Console.Out.Write(answer + "\n");
+                        }
                     }
-
-                    File.AppendAllText(LogPath, string.Format("A: {0}", answer + Environment.NewLine));
-                    File.AppendAllText(LogPath, "-----------------------" + Environment.NewLine);
-
-                    Console.Out.WriteLine(answer);
                 }
-
-                buffer.Clear();
             }
         }
 
@@ -142,14 +148,13 @@ namespace OddEven
                     newNum = odd(current);
                 }
 
-                steps++;
-
                 if (dict.ContainsKey(newNum))
                 {
                     break;
                 }
                 else
                 {
+                    steps++;
                     dict.Add(newNum, newNum);
                     current = newNum;
                 }
@@ -201,6 +206,12 @@ namespace OddEven
         private static int odd(int current)
         {
             return current * 3 - 1;
+        }
+
+        private static void Log(string line, bool debug = false)
+        {
+            string prefix = debug ? "{DEBUG} " : string.Empty;
+            File.AppendAllText(LogPath, prefix + line + Environment.NewLine);
         }
     }
 }
