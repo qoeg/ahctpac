@@ -23,7 +23,7 @@ namespace OddEven
     class Program
     {
         const string LogPath = @"C:\Test\ahctpac.log";
-
+        static int streak = 0;
         static AutoResetEvent waitObj = new AutoResetEvent(false);
 
         static Dictionary<int, int> dict = new Dictionary<int, int>();
@@ -31,6 +31,7 @@ namespace OddEven
 
         static void Main(string[] args)
         {
+            
             bool readyToAnswer = false;
 
             if (File.Exists(LogPath))
@@ -104,6 +105,14 @@ namespace OddEven
                         {
                             answer = "NO";
                         }
+                        else if (lines[0].ToLower().Contains("unscramble"))
+                        {
+                            answer = Unscramble(lines);
+                        }
+                        else if(lines[0].ToLower().Contains("streak"))
+                        {
+                            answer = streak.ToString();
+                        }
                         else
                         {
                             answer = "IDK";
@@ -115,6 +124,8 @@ namespace OddEven
                         if (!string.IsNullOrWhiteSpace(answer))
                         {
                             Console.Out.Write(answer + "\n");
+                            streak++;
+
                         }
                     }
                 }
@@ -196,6 +207,14 @@ namespace OddEven
             }
 
             return result.ToString();
+        }
+
+        private static string Unscramble(string[] lines)
+        {
+            string letters = lines[0].Replace("Unscramble the letters in the word ", "").Trim();
+
+            return String.Concat(letters.OrderBy(c => c));
+
         }
 
         private static string Triangle(string[] lines)
