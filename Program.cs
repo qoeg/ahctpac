@@ -88,6 +88,10 @@ namespace OddEven
                         {
                             answer = FavoriteColor();
                         }
+                        else if(lines[0].ToLower().Contains("times"))
+                        {
+                            answer = Multiply(lines);
+                        }
                         else if (lines[0].ToLower().Contains("tell me a joke"))
                         {
                             answer = Joke();
@@ -171,6 +175,27 @@ namespace OddEven
         private static string Joke()
         {
             return "WHAT IS A JOKE?";
+        }
+
+        private static string Multiply(string[] lines)
+        {
+            int result = 1;
+            string[] numbers = lines[0].Split(new string[] {"What is", "times", "?" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach(string number in numbers)
+            {
+                string num = number.Trim();
+                if(!string.IsNullOrWhiteSpace(num))
+                {
+                    int multiplier = 1;
+                    if(int.TryParse(num, out multiplier))
+                    {
+                        result *= multiplier;
+                    }
+                }
+            }
+
+            return result.ToString();
         }
 
         private static string Triangle(string[] lines)
