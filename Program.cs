@@ -34,30 +34,32 @@ namespace OddEven
             
             bool readyToAnswer = false;
 
-            if (File.Exists(LogPath))
-            {
-                File.Delete(LogPath);
-            }
-
             ThreadPool.QueueUserWorkItem(Answer, null);
 
             while (true)
             {
-                string str = Console.ReadLine();
-                Log(str);
-
-                if (readyToAnswer && !string.IsNullOrWhiteSpace(str))
+                try
                 {
-                    Log(string.Format("Appending line to buffer: {0}", str), true);
-                    buffer.AppendLine(str);
-                    waitObj.Set();
-                    continue;
+                    string str = Console.ReadLine();
+                    Log(str);
+
+                    if (readyToAnswer && !string.IsNullOrWhiteSpace(str))
+                    {
+                        Log(string.Format("Appending line to buffer: {0}", str), true);
+                        buffer.AppendLine(str);
+                        waitObj.Set();
+                        continue;
+                    }
+
+                    if (str.ToLower().Contains("ahctpac"))
+                    {
+                        Log("READY TO ANSWER", true);
+                        readyToAnswer = true;
+                    }
                 }
-
-                if (str.ToLower().Contains("ahctpac"))
+                catch (Exception ex)
                 {
-                    Log("READY TO ANSWER", true);
-                    readyToAnswer = true;
+                    Log(ex.Message, true);
                 }
             }
         }
