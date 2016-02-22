@@ -31,12 +31,21 @@ namespace OddEven
 
         static void Main(string[] args)
         {
+            Log("In client program", true);
             bool readyToAnswer = false;
 
-            ThreadPool.QueueUserWorkItem(Answer, null);
+            try
+            {
+                ThreadPool.QueueUserWorkItem(Answer, null);
+            }
+            catch (Exception ex)
+            {
+                Log(ex.Message, true);
+            }
 
             while (true)
             {
+                Log("In while loop", true);
                 try
                 {
                     string str = Console.ReadLine();
