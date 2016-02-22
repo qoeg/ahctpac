@@ -31,7 +31,6 @@ namespace OddEven
 
         static void Main(string[] args)
         {
-            
             bool readyToAnswer = false;
 
             ThreadPool.QueueUserWorkItem(Answer, null);
@@ -68,68 +67,75 @@ namespace OddEven
         {
             while (true)
             {
-                Log("Waiting for question", true);
-                if (waitObj.WaitOne())
+                try
                 {
-                    Thread.Sleep(1000);
-                    Log("-----------------------");
-
-                    string question = buffer.ToString();
-                    buffer.Clear();
-
-                    string answer = string.Empty;
-                    string[] lines = question.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-                    Log(string.Format("Processing lines: {0}", lines.Length), true);
-                    if (lines.Length > 0)
+                    Log("Waiting for question", true);
+                    if (waitObj.WaitOne())
                     {
-                        if (lines[0].Contains("Collatz"))
-                        {
-                            answer = Collatz(lines);
-                        }
-                        else if (lines[0].ToLower().Contains("color"))
-                        {
-                            answer = FavoriteColor();
-                        }
-                        else if(lines[0].ToLower().Contains("times"))
-                        {
-                            answer = Multiply(lines);
-                        }
-                        else if (lines[0].ToLower().Contains("tell me a joke"))
-                        {
-                            answer = Joke();
-                        }
-                        else if (lines[0].ToLower().Contains("triangle"))
-                        {
-                            answer = Triangle(lines);
-                        }
-                        else if (lines[0].ToLower().Contains("human"))
-                        {
-                            answer = "NO";
-                        }
-                        else if (lines[0].ToLower().Contains("unscramble"))
-                        {
-                            answer = Unscramble(lines);
-                        }
-                        else if(lines[0].ToLower().Contains("streak"))
-                        {
-                            answer = streak.ToString();
-                        }
-                        else
-                        {
-                            answer = "IDK";
-                        }
-
-                        Log(string.Format("A: {0}", answer));
+                        Thread.Sleep(1000);
                         Log("-----------------------");
 
-                        if (!string.IsNullOrWhiteSpace(answer))
-                        {
-                            Console.Out.Write(answer + "\n");
-                            streak++;
+                        string question = buffer.ToString();
+                        buffer.Clear();
 
+                        string answer = string.Empty;
+                        string[] lines = question.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                        Log(string.Format("Processing lines: {0}", lines.Length), true);
+                        if (lines.Length > 0)
+                        {
+                            if (lines[0].Contains("Collatz"))
+                            {
+                                answer = Collatz(lines);
+                            }
+                            else if (lines[0].ToLower().Contains("color"))
+                            {
+                                answer = FavoriteColor();
+                            }
+                            else if (lines[0].ToLower().Contains("times"))
+                            {
+                                answer = Multiply(lines);
+                            }
+                            else if (lines[0].ToLower().Contains("tell me a joke"))
+                            {
+                                answer = Joke();
+                            }
+                            else if (lines[0].ToLower().Contains("triangle"))
+                            {
+                                answer = Triangle(lines);
+                            }
+                            else if (lines[0].ToLower().Contains("human"))
+                            {
+                                answer = "NO";
+                            }
+                            else if (lines[0].ToLower().Contains("unscramble"))
+                            {
+                                answer = Unscramble(lines);
+                            }
+                            else if (lines[0].ToLower().Contains("streak"))
+                            {
+                                answer = streak.ToString();
+                            }
+                            else
+                            {
+                                answer = "IDK";
+                            }
+
+                            Log(string.Format("A: {0}", answer));
+                            Log("-----------------------");
+
+                            if (!string.IsNullOrWhiteSpace(answer))
+                            {
+                                Console.Out.Write(answer + "\n");
+                                streak++;
+
+                            }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Log(ex.Message, true);
                 }
             }
         }
