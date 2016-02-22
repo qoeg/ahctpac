@@ -24,7 +24,7 @@ namespace OddEven
     {
         const string LogPath = @"C:\Test\ahctpac.log";
         static int streak = 0;
-        static AutoResetEvent waitObj = new AutoResetEvent(false);
+        static ManualResetEvent waitObj = new ManualResetEvent(false);
 
         static Dictionary<int, int> dict = new Dictionary<int, int>();
         static StringBuilder buffer = new StringBuilder();
@@ -32,7 +32,6 @@ namespace OddEven
         static void Main(string[] args)
         {
             Log("In client program", true);
-            bool readyToAnswer = false;
 
             try
             {
@@ -43,27 +42,15 @@ namespace OddEven
                 Log(ex.Message, true);
             }
 
+            string str = string.Empty;
             while (true)
             {
-                Log("In while loop", true);
                 try
                 {
-                    string str = Console.ReadLine();
-                    Log(str);
+                    char glyph = (char)Console.Read();
+                    buffer.Append(glyph);
 
-                    if (readyToAnswer && !string.IsNullOrWhiteSpace(str))
-                    {
-                        Log(string.Format("Appending line to buffer: {0}", str), true);
-                        buffer.AppendLine(str);
-                        waitObj.Set();
-                        continue;
-                    }
-
-                    if (str.ToLower().Contains("ahctpac"))
-                    {
-                        Log("READY TO ANSWER", true);
-                        readyToAnswer = true;
-                    }
+                    waitObj.Set();
                 }
                 catch (Exception ex)
                 {
@@ -82,46 +69,47 @@ namespace OddEven
                     if (waitObj.WaitOne())
                     {
                         Thread.Sleep(1000);
+                        waitObj.Reset();
+
                         Log("-----------------------");
 
                         string question = buffer.ToString();
                         buffer.Clear();
 
                         string answer = string.Empty;
-                        string[] lines = question.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                        Log(string.Format("Processing lines: {0}", lines.Length), true);
-                        if (lines.Length > 0)
+                        Log(string.Format("Processing question: {0}", question), true);
+                        if (question.Length > 0)
                         {
-                            if (lines[0].Contains("Collatz"))
+                            if (question.Contains("How steps"))
                             {
-                                answer = Collatz(lines);
+                                answer = Collatz(question);
                             }
-                            else if (lines[0].ToLower().Contains("color"))
+                            else if (question.ToLower().Contains("color"))
                             {
                                 answer = FavoriteColor();
                             }
-                            else if (lines[0].ToLower().Contains("times"))
+                            else if (question.ToLower().Contains("times"))
                             {
-                                answer = Multiply(lines);
+                                answer = Multiply(question);
                             }
-                            else if (lines[0].ToLower().Contains("tell me a joke"))
+                            else if (question.ToLower().Contains("tell me a joke"))
                             {
                                 answer = Joke();
                             }
-                            else if (lines[0].ToLower().Contains("triangle"))
+                            else if (question.ToLower().Contains("triangle"))
                             {
-                                answer = Triangle(lines);
+                                answer = Triangle(question);
                             }
-                            else if (lines[0].ToLower().Contains("human"))
+                            else if (question.ToLower().Contains("human"))
                             {
                                 answer = "NO";
                             }
-                            else if (lines[0].ToLower().Contains("unscramble"))
+                            else if (question.ToLower().Contains("unscramble"))
                             {
-                                answer = Unscramble(lines);
+                                answer = Unscramble(question);
                             }
-                            else if (lines[0].ToLower().Contains("streak"))
+                            else if (question.ToLower().Contains("streak"))
                             {
                                 answer = streak.ToString();
                             }
@@ -137,7 +125,6 @@ namespace OddEven
                             {
                                 Console.Out.Write(answer + "\n");
                                 streak++;
-
                             }
                         }
                     }
@@ -149,17 +136,19 @@ namespace OddEven
             }
         }
 
-        public static string Collatz(string[] lines)
+        public static string Collatz(string question)
         {
             int current = 55;
             string oddExpression = string.Empty;
             string evenExpression = string.Empty;
-            foreach (string line in lines)
+
+            string pattern = "How steps does it take for ([\\d]+) to hit a number it previously hit?";
+            Match match = Regex.Match(question, pattern);
+
+            if (match.Success)
             {
-                if(line.ToLower().Contains("hit a number it previously hit"))
-                {
-                    current = (int.Parse(line.Substring(27, line.IndexOf(" to hit a number it previously hit") - 27)));
-                }
+                current = (int.Parse(match.Groups[1].Captures[0].Value));
+                Log(string.Format("Collatz number: {0}", current), true);
             }
 
             int steps = 0;
@@ -171,12 +160,10 @@ namespace OddEven
                 //even
                 if (current % 2 == 0)
                 {
-                    //var result = new DataTable().Compute(evenExpression, null);
                     newNum = even(current);
                 }
                 else //odd
                 {
-                    //var result = new DataTable().Compute(oddExpression, null);
                     newNum = odd(current);
                 }
 
@@ -205,10 +192,10 @@ namespace OddEven
             return "WHAT IS A JOKE?";
         }
 
-        private static string Multiply(string[] lines)
+        private static string Multiply(string question)
         {
             int result = 1;
-            string[] numbers = lines[0].Split(new string[] {"What is", "times", "?" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] numbers = question.Split(new string[] { "What is", "times", "?" }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach(string number in numbers)
             {
@@ -226,17 +213,17 @@ namespace OddEven
             return result.ToString();
         }
 
-        private static string Unscramble(string[] lines)
+        private static string Unscramble(string question)
         {
-            string letters = lines[0].Replace("Unscramble the letters in the word ", "").Trim();
+            string letters = question.Replace("Unscramble the letters in the word ", "").Trim();
 
             return String.Concat(letters.OrderBy(c => c));
 
         }
 
-        private static string Triangle(string[] lines)
+        private static string Triangle(string question)
         {
-            List<int> ints = parseIntsFromString(lines[0]);
+            List<int> ints = parseIntsFromString(question);
             return  Math.Round(AreaOfTriangle(ints[0], ints[1], ints[2]), ints[3]).ToString();
         }
 
